@@ -5,5 +5,5 @@ A simple python script to update Flatpak dependencies.
 To run this script automatically at startup, add the following line to your `~/.profile` file:
 
 ```bash
-bash -c "python3 $HOME/updater/update.py" &
+bash -c "python3 $HOME/Ultra_Update/update.py" &
 ```
