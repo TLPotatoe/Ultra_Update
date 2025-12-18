@@ -25,8 +25,8 @@ def main():
     all_lines = []
     
     print_add(f"\n\n\n========== Updating APPS today : {time.strftime('%Y-%m-%d %H:%M:%S')} ==========\n\n\n", all_lines)
+    time.sleep(5)
     command = "flatpak update -y"
-    
     print_add(f"Running '{command}'", all_lines)    
     start = time.perf_counter()
     process = run_subp(command)
@@ -37,6 +37,7 @@ def main():
             if '/' in line and '…' in line:
                 n_apps = int(line[line.index('/') + 1 : line.index('…')])
             print_add(f"[{time.strftime('%H:%M:%S')}] {line.strip()}", all_lines)
+    os.system(f"notify-send '===========ULTRA_UPDATE===========' '{n_apps} apps are being updated.'")
     
     update_log = os.path.join(os.path.expanduser("~"), "update_log.txt")
     
@@ -60,7 +61,7 @@ def main():
     
     time.sleep(5)
 
-    os.system(f"notify-send '===========ULTRA_UPDATE===========' '{n_apps} apps have been updated this time.'")
+    os.system(f"notify-send '===========ULTRA_UPDATE===========' '{n_apps} apps have been updated.'")
 
 if __name__ == "__main__":
     main()
