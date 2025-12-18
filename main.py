@@ -38,6 +38,8 @@ def main():
                 n_apps = int(line[line.index('/') + 1 : line.index('…')])
             print_add(f"[{time.strftime('%H:%M:%S')}] {line.strip()}", all_lines)
     os.system(f"notify-send '===========ULTRA_UPDATE===========' '{n_apps} apps are being updated.'")
+    if (n_apps):
+        return
     
     update_log = os.path.join(os.path.expanduser("~"), "update_log.txt")
     
@@ -59,7 +61,7 @@ def main():
     with open(update_log, "w") as f:
         f.writelines(current_lines)
     
-    time.sleep(5)
+    time.sleep(7)
 
     os.system(f"notify-send '===========ULTRA_UPDATE===========' '{n_apps} apps have been updated.'")
 
