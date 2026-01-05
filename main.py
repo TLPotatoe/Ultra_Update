@@ -168,8 +168,9 @@ def main():
             if "Updating " in line and flag:
                 notify(f"{n_apps} apps are being updated.", all_lines)
                 flag = 0
-            elif str(n_apps + 1) + ". " in line:
-                n_apps += 1
+            elif len(line.split()):
+                if str(n_apps + 1) + "." in line.split()[0]:
+                    n_apps += 1
             print_add(f"{line.strip()}", all_lines)
 
     return_code = process.wait()
