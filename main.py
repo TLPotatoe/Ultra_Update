@@ -6,6 +6,32 @@ import subprocess
 
 from version import VERSION
 
+PATH = os.path.dirname(__file__)
+SETTINGS = os.path.join(PATH, "settings")
+
+
+def get_setting(name: str) -> bool:
+    if os.path.exists(SETTINGS):
+        with open(SETTINGS, "r") as f:
+            lines = f.readlines()
+        for line in lines:
+            if name in line:
+                if "true" in line[line.find(":") + 1 :].lower():
+                    return True
+                else:
+                    return False
+    return False
+
+
+def check_user(text: str, default: bool = True):
+    answer = input(text).lower().strip()
+    if answer == "":
+        return default
+    if answer == "y":
+        return True
+    else:
+        return False
+
 
 def run_subp(command: str, cwd: str = None) -> subprocess.Popen:
     process = subprocess.Popen(
@@ -54,12 +80,64 @@ def write_log(text: list[str]):
         f.writelines(current_lines)
 
 
+def check_update():
+    all_lines = []
+    url = "https://raw.githubusercontent.com/TLPotatoe/Ultra_Update/refs/heads/main/version.py"
+    command = f"cd {os.path.dirname(__file__)} && git pull && python install.py && python main.py -no_check -no_child"
+    request = requests.get(url)
+    print_add("\nChecking Ultra_Update version...", all_lines)
+    if request.status_code == 200:
+        content = request.content.decode("utf-8")
+        version = content[content.find('"') + 1 : content.rfind('"')]
+        print_add(f"Current:{VERSION}. Online:{version}", all_lines)
+        if VERSION > version:
+            print("You're ahead!")
+            write_log(all_lines)
+            return 0
+        elif VERSION < version:
+            print_add(f"Newer version found: {version}\n", all_lines)
+            if not get_setting("Ultra_update"):
+                if not "-no_child" in sys.argv:
+                    os.system(
+                        f"gnome-terminal -- bash -c 'python {__file__} -no_child'"
+                    )
+                    return 1
+                if check_user(f"Update Ultra_Update to {version}? [Y/n]"):
+                    os.system(command)
+                    return 1
+            else:
+                print("Auto updating.")
+                os.system(command)
+            write_log(all_lines)
+        elif VERSION == version:
+            print_add("App is up to date.", all_lines)
+            write_log(all_lines)
+            return 0
+    else:
+        print_add(f"Bad request status: {request.status_code}")
+        write_log(all_lines)
+        return 0
+    return 0
+
+
 def main():
     all_lines = []
+    if not get_setting("Flatpak_update"):
+        if not "-no_child" in sys.argv:
+            print(f"\nCHECKING {sys.argv}\n")
+            os.system(
+                f"gnome-terminal -- bash -c 'python {__file__} -no_child -no_check'"
+            )
+            return
+        if not check_user("Would you like to update apps? [Y/n]"):
+            return
+    else:
+        print_add("Auto update on.\n", all_lines)
     print_add(
         f"\n\n\n========== Updating Apps at this date : {time.strftime('%Y-%m-%d %H:%M:%S')} ==========\n\n\n",
         all_lines,
     )
+    print_add(f"Version:{VERSION}", all_lines)
 
     command = "flatpak update -y"
 
@@ -111,37 +189,8 @@ def main():
         notify(f"{n_apps} apps have been updated.", all_lines)
 
 
-def check_update():
-    all_lines = []
-    url = "https://raw.githubusercontent.com/TLPotatoe/Ultra_Update/refs/heads/main/version.py"
-    request = requests.get(url)
-    print_add("\nChecking Ultra_Update version...", all_lines)
-    if request.status_code == 200:
-        content = request.content.decode("utf-8")
-        version = content[content.find('"') + 1 : content.rfind('"')]
-        print_add(f"Current:{VERSION}. Online:{version}", all_lines)
-        if VERSION > version:
-            print("You're ahead!")
-            write_log(all_lines)
-            return 0
-        elif VERSION < version:
-            print_add(f"Newer version found: {version}\nNow Updating.", all_lines)
-            os.system(
-                f"cd {os.path.dirname(__file__)} && git pull && python install.py && python main.py -no_check"
-            )
-            write_log(all_lines)
-            return 1
-        elif VERSION == version:
-            print_add("App is up to date.", all_lines)
-            write_log(all_lines)
-            return 0
-    else:
-        print_add(f"Bad request status: {request.status_code}")
-        write_log(all_lines)
-        return 0
-
-
 if __name__ == "__main__":
     if not "-no_check" in sys.argv:
-        check_update()
+        if check_update():
+            sys.exit()
     main()
