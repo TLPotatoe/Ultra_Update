@@ -54,8 +54,8 @@ def print_add(text: str, text_list: list, end: str = "\n") -> None:
 def notify(text: str, text_list: list[str]) -> None:
     result = -1
     while result:
-        result = os.system(f"notify-send '===========ULTRA_UPDATE===========' '{text}'")
-        time.sleep(1)
+        result = os.system(f"notify-send '==ULTRA_UPDATE==' '{text}'")
+        time.sleep(5)
     print_add(text=str("[Notification] " + text), text_list=text_list)
 
 
@@ -168,8 +168,9 @@ def main():
             if "Updating " in line and flag:
                 notify(f"{n_apps} apps are being updated.", all_lines)
                 flag = 0
-            elif str(n_apps + 1) + ". " in line:
-                n_apps += 1
+            elif len(line.split()):
+                if str(n_apps + 1) + "." in line.split()[0]:
+                    n_apps += 1
             print_add(f"{line.strip()}", all_lines)
 
     return_code = process.wait()
