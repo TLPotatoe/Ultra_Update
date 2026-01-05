@@ -9,8 +9,11 @@ def main():
     print(f"cd {os.path.dirname(PATH)} && git pull")
     os.system(f"cd {os.path.dirname(PATH)} && git pull")
     os.system("python -m pip install -r requirements.txt")
-    with open(PROFILE, "r") as f:
-        lines = f.readlines()
+    if os.path.exists(PROFILE):
+        with open(PROFILE, "r") as f:
+            lines = f.readlines()
+    else:
+        lines = []
     presence = [line for line in lines if PATH in line and COMMAND in line]
     if len(presence):
         return

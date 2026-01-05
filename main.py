@@ -48,7 +48,7 @@ def write_log(text: list[str]):
     else:
         current_lines = []
 
-    text.append("\nEnd of log.\n")
+    # text.append("\nEnd of log.\n")
     current_lines.extend(text)
     with open(update_log, "w") as f:
         f.writelines(current_lines)
@@ -132,7 +132,7 @@ def check_update():
             write_log(all_lines)
             return 1
         elif VERSION == version:
-            print_add("App is up to date.")
+            print_add("App is up to date.", all_lines)
             write_log(all_lines)
             return 0
     else:
