@@ -91,7 +91,7 @@ def check_update():
         version = content[content.find('"') + 1 : content.rfind('"')]
         print_add(f"Current:{VERSION}. Online:{version}", all_lines)
         if VERSION > version:
-            print("You're ahead!")
+            print_add("You're ahead!", all_lines)
             write_log(all_lines)
             return 0
         elif VERSION < version:
@@ -106,7 +106,7 @@ def check_update():
                     os.system(command)
                     return 1
             else:
-                print("Auto updating.")
+                print_add("Auto updating.", all_lines)
                 os.system(command)
             write_log(all_lines)
         elif VERSION == version:
@@ -124,7 +124,6 @@ def main():
     all_lines = []
     if not get_setting("Flatpak_update"):
         if not "-no_child" in sys.argv:
-            print(f"\nCHECKING {sys.argv}\n")
             os.system(
                 f"gnome-terminal -- bash -c 'python {__file__} -no_child -no_check'"
             )
