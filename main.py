@@ -17,29 +17,43 @@ def run_subp(command: str, cwd: str = None) -> subprocess.Popen:
 
 
 def print_add(text: str, text_list: list, end: str = "\n") -> None:
-    text_list.append(text + "\n")
+    text_list.append(f"[{time.strftime('%H:%M:%S')}] " + text + "\n")
     print(text, end=end)
 
 
+def notify(text: str, text_list: list[str]) -> None:
+    result = -1
+    while (result):
+        result = os.system(f"notify-send '===========ULTRA_UPDATE===========' '{text}'")
+        time.sleep(1)
+    print_add("[Notification] " + text, text_list)
+
 def main():
-    all_lines = []
-    
+    all_lines = []    
     print_add(f"\n\n\n========== Updating APPS today : {time.strftime('%Y-%m-%d %H:%M:%S')} ==========\n\n\n", all_lines)
-    time.sleep(5)
+    
     command = "flatpak update -y"
-    print_add(f"Running '{command}'", all_lines)    
+    
+    print_add(f"Running '{command}'\n", all_lines)    
     start = time.perf_counter()
     process = run_subp(command)
     
-    n_apps = 0
+    n_apps = 1
+    flag = 1
     if process.stdout:
         for line in process.stdout:
-            if '/' in line and '…' in line:
-                n_apps = int(line[line.index('/') + 1 : line.index('…')])
-            print_add(f"[{time.strftime('%H:%M:%S')}] {line.strip()}", all_lines)
-    os.system(f"notify-send '===========ULTRA_UPDATE===========' '{n_apps} apps are being updated.'")
-    if (n_apps):
-        return
+            if "Nothing to do." in line:
+                notify("No apps to update.", all_lines)
+                print_add(f"{line.strip()}", all_lines)
+                return
+            if "Updating " in line and flag:
+                notify(f"{n_apps} apps are being updated.", all_lines)
+                flag = 0
+                n_apps -= 1
+            elif str(n_apps) + '.' in line:
+                n_apps += 1
+            print_add(f"{line.strip()}", all_lines)
+
     
     update_log = os.path.join(os.path.expanduser("~"), "update_log.txt")
     
@@ -61,9 +75,8 @@ def main():
     with open(update_log, "w") as f:
         f.writelines(current_lines)
     
-    time.sleep(7)
-
-    os.system(f"notify-send '===========ULTRA_UPDATE===========' '{n_apps} apps have been updated.'")
+    notify(f"{n_apps} apps have been updated.", all_lines)
 
 if __name__ == "__main__":
     main()
+    input("Press Enter to exit...")
