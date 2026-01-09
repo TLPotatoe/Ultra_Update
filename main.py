@@ -84,9 +84,9 @@ def write_log(text: list[str]):
 def check_update():
     all_lines = []
     url = "https://raw.githubusercontent.com/TLPotatoe/Ultra_Update/refs/heads/main/version.py"
-    command = f"cd {os.path.dirname(__file__)} && git pull && python install.py && python main.py -no_check -no_child"
+    command = f"cd {os.path.dirname(__file__)} && git pull && python install.py && python main.py -only_apps -front"
     request = requests.get(url)
-    print_add("\nChecking Ultra_Update version...", all_lines)
+    print_add("\n\n\nChecking Ultra_Update version...", all_lines)
     if request.status_code == 200:
         content = request.content.decode("utf-8")
         version = content[content.find('"') + 1 : content.rfind('"')]
@@ -98,13 +98,13 @@ def check_update():
         elif VERSION < version:
             print_add(f"Newer version found: {version}\n", all_lines)
             if not get_setting("Ultra_update"):
-                if not "-no_child" in sys.argv:
-                    os.system(
-                        f"gnome-terminal -- bash -c 'python {__file__} -no_child'"
-                    )
+                if not "-front" in sys.argv:
+                    os.system(f"gnome-terminal -- bash -c 'python {__file__} -front'")
+                    write_log(all_lines)
                     return 1
                 if check_user(f"Update Ultra_Update to {version}? [Y/n]"):
                     os.system(command)
+                    write_log(all_lines)
                     return 1
             else:
                 print_add("Auto updating.", all_lines)
@@ -121,12 +121,12 @@ def check_update():
     return 0
 
 
-def main():
+def update_apps():
     all_lines = []
     if not get_setting("Flatpak_update"):
-        if not "-no_child" in sys.argv:
+        if not "-front" in sys.argv:
             os.system(
-                f"gnome-terminal -- bash -c 'python {__file__} -no_child -no_check'"
+                f"gnome-terminal -- bash -c 'python {__file__} -front -only_apps'"
             )
             return
         if not check_user("Would you like to update apps? [Y/n]"):
@@ -134,7 +134,7 @@ def main():
     else:
         print_add("Auto update on.\n", all_lines)
     print_add(
-        f"\n\n\n========== Updating Apps at this date : {time.strftime('%Y-%m-%d %H:%M:%S')} ==========\n\n\n",
+        f"\n========== Updating Apps at this date : {time.strftime('%Y-%m-%d %H:%M:%S')} ==========\n",
         all_lines,
     )
     print_add(f"Version:{VERSION}", all_lines)
@@ -175,6 +175,17 @@ def main():
             print_add(f"{line.strip()}", all_lines)
 
     return_code = process.wait()
+    # cache cleaning
+    print_add("Checking app cache", all_lines)
+    process = run_subp("du -sh ~/.var/app/*/cache")
+    for line in process.stdout:
+        print_add(line, all_lines)
+
+    process = run_subp("du -ch ~/.var/app/*/cache | tail -n 1")
+    for line in process.stdout:
+        print_add(line, all_lines)
+
+    os.system("rm -rf ~/.var/app/*/cache")
 
     if return_code != 0:
         print_add(f"Process failed with code: {return_code}")
@@ -190,8 +201,12 @@ def main():
         notify(f"{n_apps} apps have been updated.", all_lines)
 
 
-if __name__ == "__main__":
-    if not "-no_check" in sys.argv:
+def main():
+    if not "-only_apps" in sys.argv:
         if check_update():
             sys.exit()
+    update_apps()
+
+
+if __name__ == "__main__":
     main()
