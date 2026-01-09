@@ -1,11 +1,20 @@
 import os
 
-from main import check_user
 
 PROFILE = os.path.join(os.path.expanduser("~"), ".profile")
 PATH = os.path.dirname(__file__)
 SETTINGS = os.path.join(PATH, "settings")
 COMMAND = f"python3 '{os.path.join(PATH, 'main.py')}' &\n"
+
+
+def check_user(text: str, default: bool = True):
+    answer = input(text).lower().strip()
+    if answer == "":
+        return default
+    if answer == "y":
+        return True
+    else:
+        return False
 
 
 def main():

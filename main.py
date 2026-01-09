@@ -7,6 +7,7 @@ import subprocess
 from version import VERSION
 
 PATH = os.path.dirname(__file__)
+SVG = os.path.join(PATH, "ultra_update.svg")
 SETTINGS = os.path.join(PATH, "settings")
 
 
@@ -54,7 +55,7 @@ def print_add(text: str, text_list: list, end: str = "\n") -> None:
 def notify(text: str, text_list: list[str]) -> None:
     result = -1
     while result:
-        result = os.system(f"notify-send '==ULTRA_UPDATE==' '{text}'")
+        result = os.system(f"notify-send -i {SVG} '==ULTRA_UPDATE==' '{text}'")
         time.sleep(5)
     print_add(text=str("[Notification] " + text), text_list=text_list)
 
